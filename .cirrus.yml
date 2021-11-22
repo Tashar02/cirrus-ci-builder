@@ -1,11 +1,11 @@
 env:
-    TG_TOKEN: ""
-    TG_CHAT_ID: ""
+    TG_TOKEN: "ENCRYPTED[9da93d99137b301051e97f36184a1c028d38ba80aab5d135887729493debd0bf18c7d5a6afe21a975530f781bd04032c]"
+    TG_CHAT_ID: "ENCRYPTED[8ad71623fe5ad7c4ecd34e5f8bc08ff5027a22554b6b2a5629ba6b584dd94648b5e819f8ebd591ac62737646d1aa6974]"
     TZ: "Asia/Kolkata"
 
 task:
-  name: "Kernel-Builder"
-  timeout_in: 20m  
+  name: "Velocity-Kernel-Builder"
+  timeout_in: 69m  
   container:
       image: navin136/builder:latest
       cpu: 8
@@ -15,8 +15,6 @@ task:
        - export DEBIAN_FRONTEND=noninteractive
        - apt update
        - apt install sudo
-       - mkdir -p ~/.config/rclone
-       - echo "$rcloneconfig" > ~/.config/rclone/rclone.conf
        - DEBIAN_FRONTEND=noninteractive
        - sudo apt install python2 -y
        - sudo ln -sf /usr/bin/python2 /usr/bin/python
