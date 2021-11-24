@@ -54,22 +54,13 @@ cd ../
 else
 git clone --depth=1 https://github.com/navin136/android_kernel_asus_X00TD $WORK_DIR/kernel
 fi
-if [ -d $WORK_DIR/toolchains/gcc64 ] && [ -d $WORK_DIR/toolchains/gcc32 ]
-then
-echo "gcc dir exists"
-else
-git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b android12-release $WORK_DIR/toolchains/gcc64
-git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b android12-release $WORK_DIR/toolchains/gcc32
-fi
-if [ -d $WORK_DIR/toolchains/clang ]
+if [ -d $WORK_DIR/toolchains/trb_clang-14 ]
 then
 echo "clang dir exists"
 else
 cd $WORK_DIR/toolchains
-mkdir clang
-cd clang
-wget https://hitarashi.sayeed205.workers.dev/0:/clang-r416183b1.tar.gz
-tar -xvzf clang-r416183b1.tar.gz
+wget https://hyper.navin136.workers.dev/0:/trbclang/trb_clang-14.zip
+unzip trb_clang-14.zip 
 fi
 cd $WORK_DIR/kernel
 
@@ -81,21 +72,20 @@ DISTRO=$(source /etc/os-release && echo $NAME)
 CORES=$(nproc --all)
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 COMMIT_LOG=$(git log --oneline -n 1)
-COMPILER=$($WORK_DIR/toolchains/clang/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
+COMPILER=$($WORK_DIR/toolchains/trb_clang-14/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
 
 #Starting Compilation
-msg "<b>========VELOCITY Kernel========</b>%0A<b>Hey Navin!! Kernel Build Triggered !!</b>%0A<b>Device: </b><code>$DEVICE</code>%0A<b>Kernel Version: </b><code>$VERSION</code>%0A<b>Date: </b><code>$DATE</code>%0A<b>Host Distro: </b><code>$DISTRO</code>%0A<b>Host Core Count: </b><code>$CORES</code>%0A<b>Compiler Used: </b><code>$COMPILER</code>%0A<b>Branch: </b><code>$BRANCH</code>%0A<b>Last Commit: </b><code>$COMMIT_LOG</code>%0A<b>Build Coming !! Stay Online Bruh</b>"
+msg "<b>========VELOCITY Kernel========</b>%0A<b>Hey Navin!! Kernel Build Triggered !!</b>%0A<b>Device: </b><code>$DEVICE</code>%0A<b>Kernel Version: </b><code>$VERSION</code>%0A<b>Date: </b><code>$DATE</code>%0A<b>Host Distro: </b><code>$DISTRO</code>%0A<b>Host Core Count: </b><code>$CORES</code>%0A<b>Compiler Used: </b><code>$COMPILER</code>%0A<b>Branch: </b><code>$BRANCH</code>%0A<b>Last Commit: </b><code>$COMMIT_LOG</code>"
 BUILD_START=$(date +"%s")
 export ARCH=arm64
 export SUBARCH=arm64
-export PATH="$WORK_DIR/toolchains/gcc64/bin/:$WORK_DIR/toolchains/gcc32/bin/:$WORK_DIR/toolchains/clang/bin/:$PATH"
+export PATH="$WORK_DIR/toolchains/trb_clang-14/bin/:$PATH"
 cd $WORK_DIR/kernel
 make clean && make mrproper
 make O=out X00TD_defconfig
 make -j$(nproc --all) O=out \
-      CLANG_TRIPLE=aarch64-linux-gnu- \
-      CROSS_COMPILE=aarch64-linux-android- \
-      CROSS_COMPILE_ARM32=arm-linux-androideabi- \
+      CROSS_COMPILE=aarch64-linux-gnu- \
+      CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
       CC=clang | tee log.txt
 
 #Zipping Into Flashable Zip
