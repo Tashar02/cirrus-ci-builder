@@ -1,10 +1,10 @@
 env:
-    TG_TOKEN: "ENCRYPTED[9da93d99137b301051e97f36184a1c028d38ba80aab5d135887729493debd0bf18c7d5a6afe21a975530f781bd04032c]"
-    TG_CHAT_ID: "ENCRYPTED[8ad71623fe5ad7c4ecd34e5f8bc08ff5027a22554b6b2a5629ba6b584dd94648b5e819f8ebd591ac62737646d1aa6974]"
+    BOT_API_KEY: "ENCRYPTED[f8530eb3583f20acd1f7c8ac8b68f23d024d2a7b33efc732b904c727f321bad19015dd6eacad3dd92d23268f53b3ba30]"
+    CHAT_ID: "ENCRYPTED[6be3b77ae0bf272cc8ba32b1243170b9eca1bfe586d5443822db3267a691ea80df336a78909136fe529df9cbb76b8050]"
     TZ: "Asia/Kolkata"
 
 task:
-  name: "Velocity-Kernel-Builder"
+  name: "Scarlet-X-Kernel-Builder"
   timeout_in: 69m  
   container:
       image: navin136/builder:latest
@@ -18,7 +18,7 @@ task:
        - DEBIAN_FRONTEND=noninteractive
        - sudo apt install python2 -y
        - sudo ln -sf /usr/bin/python2 /usr/bin/python
-       - mkdir -p /tmp/ccache
+       - mkdir -p /tmp
        - cd /tmp
 
   Storage-Checker_background_script:
