@@ -1,30 +1,25 @@
 env:
     BOT_API_KEY: "ENCRYPTED[f8530eb3583f20acd1f7c8ac8b68f23d024d2a7b33efc732b904c727f321bad19015dd6eacad3dd92d23268f53b3ba30]"
     CHAT_ID: "ENCRYPTED[6be3b77ae0bf272cc8ba32b1243170b9eca1bfe586d5443822db3267a691ea80df336a78909136fe529df9cbb76b8050]"
-    TZ: "Asia/Kolkata"
-
+    
 task:
   name: "Scarlet-X-Kernel-Builder"
-  timeout_in: 69m  
+  timeout_in: 2h
   container:
-      image: navin136/builder:latest
+      image: ubuntu:devel
       cpu: 8
-      memory: 16G
-
-  Build-Env-Setup_background_script:
-       - export DEBIAN_FRONTEND=noninteractive
-       - apt update
-       - apt install sudo
-       - DEBIAN_FRONTEND=noninteractive
-       - sudo apt install python2 -y
-       - sudo ln -sf /usr/bin/python2 /usr/bin/python
-       - mkdir -p /tmp
-       - cd /tmp
-
-  Storage-Checker_background_script:
-      - df -h
-      - lsblk
-      - ls -l -a -h
+      memory: 32G
 
   Build_script:
-      - bash build.sh
+      - apt update && apt upgrade -y
+      - ln -fs /usr/share/zoneinfo/Asia/Kolkata /etc/localtime && date
+      - apt install -f -y git bison flex libxml2 curl locales libssl-dev bc device-tree-compiler libstdc++6 zip default-jre python3 python3-pip dpkg cpio bash python2
+      - locale-gen en_US en_US.UTF-8
+      - dpkg-reconfigure locales
+      - git clone --depth=1 https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet -b test-QTI-2 Kernel
+      - mv scarlet.sh Kernel/scarlet.sh && cd Kernel
+#     - git clone --depth=1 https://github.com/mvaisakh/gcc-arm64 -b gcc-master gcc64
+      - git clone --depth=1 https://github.com/mvaisakh/gcc-arm -b gcc-master gcc32
+      - git clone --depth=1 https://gitlab.com/dakkshesh07/neutron-clang.git -b Neutron-15 clang
+      - git clone --depth=1 https://github.com/Tashar02/AnyKernel3-4.19.git -b main Repack
+      - bash scarlet.sh CLANG
