@@ -229,18 +229,18 @@ esac
 	fi
 
 	cd $KERNEL_DIR
-	
+
 	DIFF=$(($BUILD_END - $BUILD_START))
  	post_msg "
- 	Compiler: $W$CONFIG_CC_VERSION_TEXT$G
- 	Linux Version: $W$KV$G
- 	Maintainer: $W$USER$G
- 	Device: $W$NAME$G
- 	Codename: $W$DEVICE$G
- 	Cam-lib: $W$CAM$G
- 	Zipname: $W$FINAL_ZIP$G
- 	Build Date: $W$(date +"%Y-%m-%d %H:%M")$G
- 	Build Duration: $W$(($DIFF / 60)).$(($DIFF % 60)) mins"
+ 	Compiler: <code>$CONFIG_CC_VERSION_TEXT</code>
+ 	Linux Version: <code>$KV</code>
+ 	Maintainer: <code>$USER</code>
+ 	Device: <code>$NAME</code>
+ 	Codename: <code>$DEVICE</code>
+ 	Cam-lib: <code>$CAM</code>
+ 	Zipname: <code>$FINAL_ZIP</code>
+ 	Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
+ 	Build Duration: <code>$(($DIFF / 60)).$(($DIFF % 60)) mins</code>"
 
  	push "build.log" "Build Completed Successfully"
 	exit 0
