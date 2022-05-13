@@ -16,7 +16,7 @@ task:
       - apt install -f -y git bison flex libxml2 curl locales libssl-dev bc device-tree-compiler libstdc++6 zip default-jre python3 python3-pip dpkg cpio bash python2
       - locale-gen en_US en_US.UTF-8
       - dpkg-reconfigure locales
-      - git clone --depth=1 https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet -b test-QTI-2 Kernel
+      - git clone --depth=1 https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet -b rebase Kernel
       - mv scarlet.sh Kernel/scarlet.sh && cd Kernel
 #     - git clone --depth=1 https://github.com/mvaisakh/gcc-arm64 -b gcc-master gcc64
       - git clone --depth=1 https://github.com/mvaisakh/gcc-arm -b gcc-master gcc32
