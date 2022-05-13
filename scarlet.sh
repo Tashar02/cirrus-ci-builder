@@ -1,79 +1,80 @@
-#bin/#!/bin/bash
+#!/bin/bash
 # SPDX-License-Identifier: GPL-3.0
 # Copyright © 2022,
 # Author(s): Divyanshu-Modi <divyan.m05@gmail.com>, Tashfin Shakeer Rhythm <tashfinshakeerrhythm@gmail.com>
 # Revision: 03-04-2022
 
 # USER
-	USER='Tashar'
-	HOST='Cirrus'
+USER='Tashar'
+HOST='Cirrus'
 
 # SCRIPT CONFIG
-	SILENCE='0'
-	SDFCF='1'
-	BUILD='clean'
+SILENCE='0'
+SDFCF='1'
+BUILD='clean'
 
 # DEVICE CONFIG
-	NAME='Mi A2 / 6X'
-	DEVICE='wayne'
-	DEVICE2=''
-	CAM_LIB='3'
-	COMPILER="$1"
+NAME='Mi A2 / 6X'
+DEVICE='wayne'
+DEVICE2=''
+CAM_LIB='3'
+COMPILER="$1"
 
 # PATH
-	KERNEL_DIR=`pwd`
-	ZIP_DIR="$KERNEL_DIR/Repack"
-	AKSH="$ZIP_DIR/anykernel.sh"
-	cd $KERNEL_DIR
+KERNEL_DIR=`pwd`
+ZIP_DIR="$KERNEL_DIR/Repack"
+AKSH="$ZIP_DIR/anykernel.sh"
 
 # DEFCONFIG
-	DFCF="vendor/${DEVICE}-oss-perf_defconfig"
-	CONFIG="$KERNEL_DIR/arch/arm64/configs/$DFCF"
+DFCF="vendor/${DEVICE}-oss-perf_defconfig"
+CONFIG="$KERNEL_DIR/arch/arm64/configs/$DFCF"
 
 # COLORS
-	R='\033[1;31m'
-	G='\033[1;32m'
-	Y='\033[1;33m'
-	B='\033[1;34m'
-	W='\033[1;37m'
+R='\033[1;31m'
+G='\033[1;32m'
+Y='\033[1;33m'
+B='\033[1;34m'
+W='\033[1;37m'
 
-error () {
-	echo -e ""
-	echo -e "$R Error! $Y$1"
-	echo -e ""
-	exit 1
+printmsg() {
+	case $* in
+		"-n") echo -e "[*] $@" ;;
+		"-e"|"--error") echo -e "[!] error: $@" ; exit 1 ;;
+	esac
 }
 
 if [[ "$USER" == "" ]]; then
 	clear
-	echo -ne "$G \n User not defined! Manual input required :$W "
+	printf "$G \n User not defined! Manual input required :$W "
 	read -r USER
 fi
 if [[ "$HOST" == "" ]]; then
 	clear
-	echo -ne "$G \n Host not defined! Manual input required :$W "
+	printf "$G \n Host not defined! Manual input required :$W "
 	read -r HOST
 fi
 if [[ "$SILENCE" == "1" ]]; then
-	FLAG=-s
+	FLAG="-s"
 fi
 
 # Telegram Bot Integration
-function post_msg() {
+post_msg()
+{
 	curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" \
 	-d chat_id="$chat_id" \
 	-d "disable_web_page_preview=true" \
 	-d "parse_mode=html" \
 	-d text="$1"
-	}
+}
 
-function push() {
-	curl -F document=@$1 "https://api.telegram.org/bot$token/sendDocument" \
+push()
+{
+	curl -F document=@$(echo -e *$1*) "https://api.telegram.org/bot$token/sendDocument" \
 	-F chat_id="$chat_id" \
 	-F "disable_web_page_preview=true" \
 	-F "parse_mode=html" \
 	-F caption="$2"
-	}
+}
 
 # Set variables
 pass() {
@@ -91,7 +92,7 @@ pass() {
 		C_PATH="$KERNEL_DIR/gcc64/bin:$KERNEL_DIR/gcc32/"
 	else
 		clear
-		error 'Value not recognized'
+		printmsg -e 'Value not recognized'
 	fi
 		CC_32="$KERNEL_DIR/gcc32/bin/arm-eabi-"
 		CC_COMPAT="$KERNEL_DIR/gcc32/bin/arm-eabi-gcc"
@@ -103,12 +104,12 @@ export PATH=$C_PATH/bin:$PATH
 BUILD_START=$(date +"%s")
 
 muke () {
-	make O=$COMPILER $CFLAG ARCH=arm64 $FLAG \
-			CC=$CC                           \
-			LLVM=1                           \
-			LLVM_IAS=1                       \
-			PYTHON=python3                   \
-			KBUILD_BUILD_USER=$USER          \
+	make O=$COMPILER $CFLAG ARCH=arm64 ${FLAG} \
+			CC=$CC                      \
+			LLVM=1                       \
+			LLVM_IAS=1                    \
+			PYTHON=python3                 \
+			KBUILD_BUILD_USER=$USER         \
 			KBUILD_BUILD_HOST=$HOST          \
 			DTC_EXT=$(which dtc)             \
 			AS=llvm-as                       \
@@ -127,14 +128,16 @@ muke () {
 			CROSS_COMPILE=$CC_64             \
 			CC_COMPAT=$CC_COMPAT             \
 			CROSS_COMPILE_COMPAT=$CC_32      \
-			LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH
+			LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH \
+			V=0 2>&1 | tee build.log
 }
 
 # Compilation ends here
 BUILD_END=$(date +"%s")
 
 # Cleanup the build environment
-build () {
+build()
+{
 	clear
 	if [[ "$BUILD" == "clean" ]]; then
 		rm -rf $COMPILER || mkdir $COMPILER
@@ -145,7 +148,8 @@ build () {
 }
 
 # BUILD-START
-compile () {
+compile()
+{
 	CFLAG=$DFCF
 	muke
 
@@ -168,12 +172,13 @@ compile () {
 }
 
 # Check for AnyKernel3
-check () {
+check()
+{
 	if [[ -f $KERNEL_DIR/$COMPILER/arch/arm64/boot/Image.gz-dtb ]]; then
 		if [[ -d $ZIP_DIR ]]; then
 			zip_ak
 		else
-			error "Anykernel is not present, cannot zip"
+			printmsg -e "Anykernel is not present, cannot zip"
 		fi
 	else
 		push "build.log" "Build Throws Errors"
@@ -196,15 +201,15 @@ zip_ak () {
 		VARIANT='NON_LTO'
 	fi
 
-case $CAM_LIB in 
+case $CAM_LIB in
 	1)
-	   CAM=NEW-CAM
+	   CAM="NEW-CAM"
 	;;
 	2)
-	   CAM=OLD-CAM
+	   CAM="OLD-CAM"
 	;;
 	3)
-	   CAM=OSS-CAM
+	   CAM="OSS-CAM"
 	;;
 esac
 
@@ -231,16 +236,7 @@ esac
 	cd $KERNEL_DIR
 
 	DIFF=$(($BUILD_END - $BUILD_START))
- 	post_msg "
- 	Compiler: <code>$CONFIG_CC_VERSION_TEXT</code>
- 	Linux Version: <code>$KV</code>
- 	Maintainer: <code>$USER</code>
- 	Device: <code>$NAME</code>
- 	Codename: <code>$DEVICE</code>
- 	Cam-lib: <code>$CAM</code>
- 	Zipname: <code>$FINAL_ZIP</code>
- 	Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
- 	Build Duration: <code>$(($DIFF / 60)).$(($DIFF % 60)) mins</code>"
+ 	post_msg "%0ACompiler: $CONFIG_CC_VERSION_TEXT%0ALinux Version: $KV%0AMaintainer: $USER%0ADevice: $NAME%0ACodename: $DEVICE%0ACam-lib: $CAM%0AZipname: $FINAL_ZIP%0ABuild Date: $(date +"%Y-%m-%d %H:%M")%0ABuild Duration: $(($DIFF / 60)).$(($DIFF % 60)) mins"
 
  	push "build.log" "Build Completed Successfully"
 	exit 0
