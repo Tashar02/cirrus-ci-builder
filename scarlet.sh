@@ -99,7 +99,9 @@ pass() {
 }
 export PATH=$C_PATH/bin:$PATH
 
-# Compilation
+# Let the compilation begin
+BUILD_START=$(date +"%s")
+
 muke () {
 	make O=$COMPILER $CFLAG ARCH=arm64 $FLAG \
 			CC=$CC                           \
@@ -127,6 +129,9 @@ muke () {
 			CROSS_COMPILE_COMPAT=$CC_32      \
 			LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH
 }
+
+# Compilation ends here
+BUILD_END=$(date +"%s")
 
 # Cleanup the build environment
 build () {
@@ -224,6 +229,8 @@ esac
 	fi
 
 	cd $KERNEL_DIR
+	
+	DIFF=$(($BUILD_END - $BUILD_START))
  	post_msg "
  	Compiler: $W$CONFIG_CC_VERSION_TEXT$G
  	Linux Version: $W$KV$G
