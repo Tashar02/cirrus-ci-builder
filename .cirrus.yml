@@ -1,7 +1,7 @@
 env:
     token: "ENCRYPTED[f8530eb3583f20acd1f7c8ac8b68f23d024d2a7b33efc732b904c727f321bad19015dd6eacad3dd92d23268f53b3ba30]"
     chat_id: "ENCRYPTED[6be3b77ae0bf272cc8ba32b1243170b9eca1bfe586d5443822db3267a691ea80df336a78909136fe529df9cbb76b8050]"
-    
+
 task:
   name: "Scarlet-X-Kernel-Builder"
   timeout_in: 2h
@@ -13,13 +13,7 @@ task:
   Build_script:
       - apt update && apt upgrade -y
       - ln -fs /usr/share/zoneinfo/Asia/Kolkata /etc/localtime && date
-      - apt install -f -y git bison flex libxml2 curl locales libssl-dev bc device-tree-compiler libstdc++6 zip default-jre python3 python3-pip dpkg cpio bash python2
+      - apt install -f -y git bison flex libxml2 curl locales libssl-dev bc device-tree-compiler libstdc++6 zip default-jre python3 python3-pip dpkg cpio bash python2 && pip3 install telegram-send
       - locale-gen en_US en_US.UTF-8
       - dpkg-reconfigure locales
-      - git clone --depth=1 https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet -b rebase Kernel
-      - mv scarlet.sh Kernel/scarlet.sh && cd Kernel
-#     - git clone --depth=1 https://github.com/mvaisakh/gcc-arm64 -b gcc-master gcc64
-      - git clone --depth=1 https://github.com/mvaisakh/gcc-arm -b gcc-master gcc32
-      - git clone --depth=1 https://gitlab.com/dakkshesh07/neutron-clang.git -b Neutron-15 clang
-      - git clone --depth=1 https://github.com/Tashar02/AnyKernel3.git Repack
-      - bash scarlet.sh CLANG
+      - bash builder.sh
