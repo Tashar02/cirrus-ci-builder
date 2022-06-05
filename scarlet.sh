@@ -1,288 +1,273 @@
-#!/bin/bash
-# SPDX-License-Identifier: GPL-3.0
-# Copyright © 2022,
-# Author(s): Divyanshu-Modi <divyan.m05@gmail.com>, Tashfin Shakeer Rhythm <tashfinshakeerrhythm@gmail.com>
-# Revision: 13-05-2022
+#!/usr/bin/env bash
+# Copyright (c) 2021-2022, Tashfin Shakeer Rhythm <tashfinshakeerrhythm@gmail.com>
+# Revision: 06-06-2022 V7.0
 
-#########################    CONFIGURATION    ##############################
+# USER
+	USER='Tashar'
+	HOST='Cirrus'
+	TOKEN=${token}
+	CHATID=${chat_id}
+	BOT_MSG_URL="https://api.telegram.org/bot$TOKEN/sendMessage"
+	BOT_BUILD_URL="https://api.telegram.org/bot$TOKEN/sendDocument"
+	COMPILER="$1"
 
-# User details
-KBUILD_USER="Tashar"
-KBUILD_HOST="Cirrus"
+# SCRIPT CONFIG
+	SILENCE='0'
+	SDFCF='1'
+	BUILD='clean'
 
-# Build type (Fresh build: clean | incremental build: dirty)
-# (default: dirty | modes: clean, dirty)
-BUILD='clean'
+# DEVICE CONFIG
+	NAME='Mi A2 / 6X'
+	DEVICE='wayne'
+	DEVICE2='jasmine'
+	CAM_LIB='3'
+	HAPTICS='2'
 
-############################################################################
+# PATH
+	KERNEL_DIR=`pwd`
+	TOOLCHAIN="$KERNEL_DIR/../toolchains"
+	ZIP_DIR="$KERNEL_DIR/AnyKernel3"
+	AKSH="$ZIP_DIR/anykernel.sh"
+	cd $KERNEL_DIR
 
-########################    DIRECTOR PATHS   ###############################
+# DEFCONFIG
+	DFCF="vendor/${DEVICE}-oss-perf_defconfig"
+	CONFIG="$KERNEL_DIR/arch/arm64/configs/$DFCF"
 
-# Kernel Directory
-KERNEL_DIR=`pwd`
+# COLORS
+	R='\033[1;31m'
+	G='\033[1;32m'
+	Y='\033[1;33m'
+	B='\033[1;34m'
+	W='\033[1;37m'
 
-# Propriatary Directory (default paths may not work!)
-PRO_PATH="$KERNEL_DIR/.."
-COMPILER=$1
-
-# Anykernel Directories
-AK3_DIR="$PRO_PATH/AnyKernel3"
-AKSH="$AK3_DIR/anykernel.sh"
-
-# Toolchain Directory
-TLDR="$PRO_PATH/toolchains"
-
-############################################################################
-
-###############################   MISC   #################################
-
-# functions
 error() {
-	telegram-send "Error⚠️: $@"
+	echo -e ""
+	echo -e "$R Error! $Y$1"
+	echo -e ""
 	exit 1
 }
 
-success() {
-	telegram-send "Success: $@"
-	exit 0
-}
+if [[ "$USER" == "" ]]; then
+	clear
+	echo -ne "$G \n User not defined! Manual input required :$W "
+	read -r USER
+fi
+if [[ "$HOST" == "" ]]; then
+	clear
+	echo -ne "$G \n Host not defined! Manual input required :$W "
+	read -r HOST
+fi
+if [[ "$SILENCE" == "1" ]]; then
+	FLAG=-s
+fi
 
-inform() {
-	telegram-send --format html "$@"
+# Flags to be passed to compile
+pass() {
+	if [[ "$COMPILER" == "clang" ]]; then
+		CC='clang'
+		HOSTCC="$CC"
+		HOSTCXX="$CC++"
+		CC_64='aarch64-linux-gnu-'
+		C_PATH="$TOOLCHAIN/clang"
+		sed -i '/CONFIG_SOUND_CONTROL=y/ a CONFIG_LTO_CLANG_FULL=y' $CONFIG
+	elif [[ "$COMPILER" == "gcc" ]]; then
+		HOSTCC='gcc'
+		CC_64='aarch64-elf-'
+		CC='aarch64-elf-gcc'
+		HOSTCXX='aarch64-elf-g++'
+		C_PATH="$TOOLCHAIN/gcc64/bin:$HOME/scarlet-x/gcc32/"
+	else
+		clear
+		error 'Value not recognized'
+	fi
+		CC_32="$TOOLCHAIN/gcc32/bin/arm-eabi-"
+		CC_COMPAT="$TOOLCHAIN/gcc32/bin/arm-eabi-gcc"
+		build
 }
+export PATH=$C_PATH/bin:$PATH
 
+# Compilation
 muke() {
-	if [[ "$SILENCE" == "1" ]]; then
-		KERN_MAKE_ARGS="-s $KERN_MAKE_ARGS"
+	make O=work $CFLAG ARCH=arm64 $FLAG	     \
+			CC=$CC                           \
+			LLVM=1                           \
+			LLVM_IAS=1                       \
+			PYTHON=python3                   \
+			KBUILD_BUILD_USER=$USER          \
+			KBUILD_BUILD_HOST=$HOST          \
+			DTC_EXT=$(which dtc)             \
+			AS=llvm-as                       \
+			AR=llvm-ar                       \
+			NM=llvm-nm                       \
+			LD=ld.lld                        \
+			STRIP=llvm-strip                 \
+			OBJCOPY=llvm-objcopy             \
+			OBJDUMP=llvm-objdump             \
+			OBJSIZE=llvm-objsize             \
+			HOSTLD=ld.lld                    \
+			HOSTCC=$HOSTCC                   \
+			HOSTCXX=$HOSTCXX                 \
+			HOSTAR=llvm-ar                   \
+			PATH=$C_PATH/bin:$PATH           \
+			CROSS_COMPILE=$CC_64             \
+			CC_COMPAT=$CC_COMPAT             \
+			CROSS_COMPILE_COMPAT=$CC_32      \
+			LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH \
+			2>&1 | tee log.txt
+}
+
+# Functions to send messages/files to telegram
+tg_post_msg() {
+	curl -s -X POST "$BOT_MSG_URL" -d chat_id="$CHATID" \
+	-d "disable_web_page_preview=true" \
+	-d "parse_mode=html" \
+	-d text="$1"
+}
+
+tg_post_build() {
+	#Post MD5Checksum alongwith for easeness
+	MD5CHECK=$(md5sum "$1" | cut -d' ' -f1)
+
+	#Show the Checksum alongwith caption
+	curl --progress-bar -F document=@"$1" "$BOT_BUILD_URL" \
+	-F chat_id="$CHATID"  \
+	-F "disable_web_page_preview=true" \
+	-F "parse_mode=html" \
+	-F caption="$2 | <b>MD5 Checksum : </b><code>$MD5CHECK</code>"
+}
+
+# Cleanup the build environment
+build() {
+	clear
+	if [[ "$BUILD" == "clean" ]]; then
+		rm -rf work log.txt || mkdir work
+	else
+		make O=work clean mrproper distclean
 	fi
-
-	make $@ $KERN_MAKE_ARGS
+	compile
 }
 
-usage() {
-	inform " ./scarlet.sh <arg>
-		--compiler   sets the compiler to be used
-		--device     sets the device for kernel build
-		--silence    Silence shell output of Kbuild"
-	exit 2
-}
+# BUILD-START
+compile() {
+	CFLAG=$DFCF
+	muke
 
-############################################################################
+	echo -e "$B"
+	echo -e "                Build started                "
+	echo -e "$G"
 
-compiler_setup() {
-############################  COMPILER SETUP  ##############################
-	case $COMPILER in
-		clang)
-			C_PATH="$TLDR/clang"
-			KERN_MAKE_ARGS="                            \
-					CC='clang'                          \
-					HOSTCC=$CC                          \
-					HOSTCXX=$CC                         \
-					CROSS_COMPILE='aarch64-linux-gnu-'"
-		;;
-		gcc)
-			KERN_MAKE_ARGS="                      \
-					C_PATH="$TLDR/gcc-arm64"      \
-					CC='aarch64-elf-gcc'          \
-					HOSTCC='gcc'                  \
-					HOSTCXX='aarch64-elf-g++'     \
-					CROSS_COMPILE='aarch64-elf-'"
-		;;
-	esac
-	CC_32="$TLDR/gcc-arm/bin/arm-eabi-"
-	CC_COMPAT="$TLDR/gcc-arm/bin/arm-eabi-gcc"
-
-	KERN_MAKE_ARGS="$KERN_MAKE_ARGS      \
-		O=work ARCH=arm64                \
-		LLVM=1                           \
-		LLVM_IAS=1                       \
-		AS=llvm-as                       \
-		AR=llvm-ar                       \
-		NM=llvm-nm                       \
-		LD=ld.lld                        \
-		STRIP=llvm-strip                 \
-		OBJCOPY=llvm-objcopy             \
-		OBJDUMP=llvm-objdump             \
-		OBJSIZE=llvm-objsize             \
-		HOSTLD=ld.lld                    \
-		HOSTCC=$HOSTCC                   \
-		HOSTCXX=$HOSTCXX                 \
-		HOSTAR=llvm-ar                   \
-		KBUILD_BUILD_USER=$KBUILD_USER   \
-		KBUILD_BUILD_HOST=$KBUILD_HOST   \
-		PATH=$C_PATH/bin:$PATH           \
-		CC_COMPAT=$CC_COMPAT             \
-		CROSS_COMPILE_COMPAT=$CC_32      \
-		LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH"
-############################################################################
-}
-
-kernel_builder() {
-##################################  BUILD  #################################
-	if [[ -z $CODENAME ]]; then
-		error 'Device not mentioned'
-		exit 1
-	fi
-
-	case $BUILD in
-		clean)
-			rm -rf work || mkdir work
-		;;
-		*)
-			muke clean mrproper distclean
-		;;
-	esac
-
-	# Build Start
 	BUILD_START=$(date +"%s")
 
-	DFCF="vendor/${CODENAME}-${SUFFIX}_defconfig"
+	CFLAG=-j$(nproc --all)
+	muke
 
-	inform "
-		========Build Triggered========
-		Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
-		Build Number: <code>$DRONE_BUILD_NUMBER</code>
-		Device: <code>$DEVICENAME</code>
-		Codename: <code>$CODENAME</code>
-		Compiler: <code>$($C_PATH/bin/$CC --version | head -n 1 | perl -pe 's/\(http.*?\)//gs')</code>
-		Compiler_32: <code>$($CC_COMPAT --version | head -n 1)</code>
-	"
-
-	# Make .config
-	muke $DFCF
-
-	# Compile
-	muke -j$(nproc)
-
-	# Build End
+# BUILD-END
 	BUILD_END=$(date +"%s")
 
-	DIFF=$(($BUILD_END - $BUILD_START))
-
-	if [[ -f $KERNEL_DIR/work/arch/arm64/boot/$TARGET ]]; then
-		zipper
-	else
-		error 'Kernel image not found'
-	fi
-############################################################################
+	echo -e "$B"
+	echo -e "                Zipping started                "
+	echo -e "$W"
+	check
 }
 
-zipper() {
-####################################  ZIP  #################################
+# Check for AnyKernel3
+check() {
+	if [[ -f $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb ]]; then
+		if [[ -d $ZIP_DIR ]]; then
+			zip_ak
+		else
+			error 'Anykernel not present cannot zip'
+		fi
+	else
+		tg_post_build "log.txt" "Build failed!!"
+		error 'Kernel image not found'
+	fi
+}
+
+# Pack the zip
+zip_ak() {
 	source work/.config
 
-	VERSION=`echo $CONFIG_LOCALVERSION | cut -c 8-`
-	KERNEL_VERSION=$(make kernelversion)
-	LAST_COMMIT=$(git show -s --format=%s)
-	LAST_HASH=$(git rev-parse --short HEAD)
+	FDEVICE=${DEVICE^^}
+	FDEVICE2=${DEVICE2^^}
+	KNAME=$(echo "$CONFIG_LOCALVERSION" | cut -c 2-)
 
-	if [[ ! -d $AK3_DIR ]]; then
-		error 'Anykernel not present cannot zip'
+	if [[ "$CONFIG_LTO_CLANG_THIN" != "y" && "$CONFIG_LTO_CLANG_FULL" == "y" ]]; then
+		VARIANT='FULL_LTO'
+	elif [[ "$CONFIG_LTO_CLANG_THIN" == "y" && "$CONFIG_LTO_CLANG_FULL" == "y" ]]; then
+		VARIANT='THIN_LTO'
+	else
+		VARIANT='NON_LTO'
 	fi
+
+	case $CAM_LIB in 
+		1)
+		   CAM=NEWCAM
+		;;
+		2)
+		   CAM=OLDCAM
+		;;
+		3)
+		   CAM=OSSCAM
+		;;
+	esac
+
+	case $HAPTICS in 
+		1)
+		   HAPTIC=QPNP
+		;;
+		2)
+		   HAPTIC=QTI
+		;;
+	esac
+
+	cp $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb $ZIP_DIR/
+
+	if [[ "$DEVICE2" != "" ]]; then
+		sed -i "/device.name1/ a device.name2=$DEVICE2" $AKSH
+	fi
+	tg_post_build "log.txt" "Compiled kernel successfully!!"
+
+	cd $ZIP_DIR
+
+	FINAL_ZIP="$KNAME-$CAM-$HAPTIC-$FDEVICE2-$FDEVICE-`date +"%H%M"`"
+	zip -r9 "$FINAL_ZIP".zip * -x README.md LICENSE FUNDING.yml *placeholder zipsigner*
+	java -jar zipsigner* "$FINAL_ZIP.zip" "$FINAL_ZIP-signed.zip"
+	FINAL_ZIP="$FINAL_ZIP-signed.zip"
+
+	tg_post_build "$FINAL_ZIP" "${CAM}+${HAPTIC}"
+
 	if [[ ! -d "$KERNEL_DIR/out" ]]; then
 		mkdir $KERNEL_DIR/out
 	fi
+	OUT="$KERNEL_DIR/out"
 
-	cp $KERNEL_DIR/work/arch/arm64/boot/$TARGET $AK3_DIR
-
-	cd $AK3_DIR
-
-	make zip VERSION=$VERSION
-
-	inform "
-		========Scarlet-X Kernel========
-		Linux Version: <code>$KERNEL_VERSION</code>
-		Scarlet-Version: <code>$VERSION</code>
-		CI: <code>$KBUILD_HOST</code>
-		Core count: <code>$(nproc)</code>
-		Compiler: <code>$($C_PATH/bin/$CC --version | head -n 1 | perl -pe 's/\(http.*?\)//gs')</code>
-		Compiler_32: <code>$($CC_COMPAT --version | head -n 1)</code>
-		Device: <code>$DEVICENAME</code>
-		Codename: <code>$CODENAME</code>
-		Cam lib: <code>$CAM</code>
-		Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
-		Build Type: <code>$BUILD_TYPE</code>
-
-		-----------last commit details-----------
-		Last commit (name): <code>$LAST_COMMIT</code>
-
-		Last commit (hash): <code>$LAST_HASH</code>
-	"
-
-	telegram-send --file *-signed.zip
-
-	make clean
+	cp $FINAL_ZIP $OUT
+	rm *.zip Image.gz-dtb
 
 	cd $KERNEL_DIR
 
-	success "build completed in $(($DIFF / 60)).$(($DIFF % 60)) mins"
+	DIFF=$(($BUILD_END - $BUILD_START))
+	KV=$(cat $KERNEL_DIR/work/include/generated/utsrelease.h | cut -c 21- | tr -d '"')
+	COMMIT_NAME=$(git show -s --format=%s)
+	COMMIT_HASH=$(git rev-parse --short HEAD)
 
-############################################################################
+# Print the build information
+tg_post_msg "
+=========Scarlet-X Kernel=========
+  Compiler: <code>$CONFIG_CC_VERSION_TEXT</code>
+  Linux Version: <code>$KV</code>
+  Maintainer: <code>$USER</code>
+  Device: <code>$NAME</code>
+  Codename: <code>$DEVICE</code>
+  Zipname: <code>$FINAL_ZIP</code>
+  Variant: <code>$VARIANT</code>
+  Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
+  Build Duration: <code>$(($DIFF / 60)).$(($DIFF % 60)) mins</code>
+  Last Commit Name: <code>$COMMIT_NAME</code>
+  Last Commit Hash: <code>$COMMIT_HASH</code>
+"
+	exit 0
 }
-
-###############################  COMMAND_MODE  ##############################
-if [[ -z $* ]]; then
-	usage
-fi
-
-for arg in "$@"; do
-	case "${arg}" in
-		"--compiler="*)
-			COMPILER=${arg#*=}
-			case ${COMPILER} in
-				clang)
-					COMPILER="clang"
-				;;
-				gcc)
-					COMPILER="gcc"
-				;;
-				*)
-					usage
-				;;
-			esac
-		;;
-		"--device="*)
-			CODENAME=${arg#*=}
-			case $CODENAME in
-				wayne)
-					DEVICENAME='Mi A2 / 6X'
-					CODENAME='wayne'
-					SUFFIX='perf'
-					MODULES='0'
-					TARGET='Image.gz-dtb'
-				;;
-				*)
-					error 'device not supported'
-				;;
-			esac
-		;;
-		"--camlib="*)
-			CAM_LIB=${arg#*=}
-			case $CAM_LIB in
-				1)
-				   CAM="NEW-CAM"
-				;;
-				2)
-				   CAM="OLD-CAM"
-				;;
-				*)
-				   CAM="OSS-CAM"
-				;;
-			esac
-		;;
-		"--silence")
-			SILENCE='1'
-		;;
-		*)
-			usage
-		;;
-	esac
-done
-############################################################################
-
-# Remove testing of System.map as test always fails to check for file
-# DO NOT MODIFY!!!!
-sed -i '13d;14d;15d;16d;17d' $KERNEL_DIR/scripts/depmod.sh
-
-compiler_setup
-kernel_builder
+	pass
