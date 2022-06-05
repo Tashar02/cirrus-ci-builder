@@ -6,14 +6,11 @@ task:
   name: "Scarlet-X-Kernel-Builder"
   timeout_in: 2h
   container:
-      image: ubuntu:devel
+      image: atomxorg/arch-linux:latest
       cpu: 8
       memory: 32G
 
   Build_script:
-      - apt update && apt upgrade -y
       - ln -fs /usr/share/zoneinfo/Asia/Kolkata /etc/localtime && date
-      - apt install -f -y git bison flex libxml2 curl locales libssl-dev bc device-tree-compiler libstdc++6 zip default-jre python3 python3-pip dpkg cpio bash python2 && pip3 install telegram-send
       - locale-gen en_US en_US.UTF-8
-      - dpkg-reconfigure locales
       - bash builder.sh
