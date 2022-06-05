@@ -26,7 +26,7 @@
 # PATH
 	KERNEL_DIR=`pwd`
 	TOOLCHAIN="$KERNEL_DIR/../toolchains"
-	ZIP_DIR="$KERNEL_DIR/AnyKernel3"
+	ZIP_DIR="$KERNEL_DIR/../AnyKernel3"
 	AKSH="$ZIP_DIR/anykernel.sh"
 	cd $KERNEL_DIR
 
