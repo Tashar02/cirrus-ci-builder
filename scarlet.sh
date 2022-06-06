@@ -237,14 +237,6 @@ zip_ak() {
 
 	tg_post_build "$FINAL_ZIP" "${CAM}+${HAPTIC}"
 
-	if [[ ! -d "$KERNEL_DIR/out" ]]; then
-		mkdir $KERNEL_DIR/out
-	fi
-	OUT="$KERNEL_DIR/out"
-
-	cp $FINAL_ZIP $OUT
-	rm *.zip Image.gz-dtb
-
 	cd $KERNEL_DIR
 
 	DIFF=$(($BUILD_END - $BUILD_START))
