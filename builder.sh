@@ -13,9 +13,9 @@ gut() {
 
 mkdir toolchains
 
-#gut https://github.com/mvaisakh/gcc-arm64.git -b gcc-master toolchains/gcc64
-gut https://github.com/mvaisakh/gcc-arm.git -b gcc-master toolchains/gcc32
-gut https://gitlab.com/dakkshesh07/neutron-clang.git toolchains/clang
+#gut https://github.com/KenHV/gcc-arm64 -b master toolchains/gcc64
+gut https://github.com/KenHV/gcc-arm -b master toolchains/gcc32
+gut https://gitlab.com/dakkshesh07/neutron-clang.git -b Neutron-15 toolchains/clang
 
 ############################################################################
 
@@ -27,7 +27,7 @@ gut https://github.com/Tashar02/AnyKernel3.git AnyKernel3
 
 ############################### Setup Kernel ###############################
 
-gut https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b rebase-4 Kernel
+gut https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b test Kernel
 
 ############################################################################
 
