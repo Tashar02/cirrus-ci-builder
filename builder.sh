@@ -13,9 +13,9 @@ gut() {
 
 mkdir toolchains
 
-#gut https://github.com/KenHV/gcc-arm64 -b master toolchains/gcc64
-gut https://github.com/KenHV/gcc-arm -b master toolchains/gcc32
-gut https://gitlab.com/dakkshesh07/neutron-clang.git -b Neutron-15 toolchains/clang
+#gut https://github.com/cyberknight777/gcc-arm64.git -b master toolchains/gcc64
+gut https://github.com/cyberknight777/gcc-arm.git -b master toolchains/gcc32
+gut https://gitlab.com/dakkshesh07/neutron-clang.git -b Neutron-16 toolchains/clang
 
 ############################################################################
 
