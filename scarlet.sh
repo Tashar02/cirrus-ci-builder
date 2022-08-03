@@ -95,7 +95,6 @@ muke() {
 			PYTHON=python3                   \
 			KBUILD_BUILD_USER=$USER          \
 			KBUILD_BUILD_HOST=$HOST          \
-			DTC_EXT=$(which dtc)             \
 			AS=llvm-as                       \
 			AR=llvm-ar                       \
 			NM=llvm-nm                       \
