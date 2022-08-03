@@ -70,6 +70,7 @@ pass() {
 		HOSTCXX="$CC++"
 		CC_64='aarch64-linux-gnu-'
 		C_PATH="$TOOLCHAIN/clang"
+		sed -i '/CONFIG_SOUND_CONTROL=y/ a CONFIG_LTO_CLANG_FULL=y' $CONFIG
 	elif [[ "$COMPILER" == "gcc" ]]; then
 		HOSTCC='gcc'
 		CC_64='aarch64-elf-'
