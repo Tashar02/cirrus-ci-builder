@@ -223,9 +223,6 @@ zip_ak() {
 
 	cp $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb $ZIP_DIR/
 
-	if [[ "$DEVICE2" != "" ]]; then
-		sed -i "/device.name1/ a device.name2=$DEVICE2" $AKSH
-	fi
 	tg_post_build "log.txt" "Compiled kernel successfully!!"
 
 	cd $ZIP_DIR
