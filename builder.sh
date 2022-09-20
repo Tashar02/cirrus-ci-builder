@@ -15,7 +15,12 @@ mkdir toolchains
 
 #gut https://github.com/cyberknight777/gcc-arm64.git -b master toolchains/gcc64
 gut https://github.com/cyberknight777/gcc-arm.git -b master toolchains/gcc32
-gut https://gitlab.com/dakkshesh07/neutron-clang.git -b Neutron-16 toolchains/clang
+gut https://gitlab.com/dakkshesh07/neutron-clang.git -b main toolchains/clang
+
+cd toolchains
+mv clang/antman $PWD/antman
+bash antman -S
+cd ..
 
 ############################################################################
 
