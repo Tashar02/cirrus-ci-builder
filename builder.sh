@@ -32,7 +32,7 @@ gut https://github.com/Tashar02/AnyKernel3.git AnyKernel3
 
 ############################### Setup Kernel ###############################
 
-gut https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b rebase-qti Kernel
+gut https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b default-QTI Kernel
 
 ############################################################################
 
