@@ -20,7 +20,7 @@
 	NAME='Mi A2 / 6X'
 	DEVICE='wayne'
 	DEVICE2='jasmine'
-	CAM_LIB='1'
+	CAM_LIB='3'
 	HAPTICS='1'
 
 # PATH
@@ -31,7 +31,13 @@
 	cd $KERNEL_DIR
 
 # DEFCONFIG
+if [[ "$CAM_LIB" == "1" ]]; then
 	DFCF="vendor/${DEVICE}-perf_defconfig"
+elif [[ "$CAM_LIB" == "2" ]]; then
+	DFCF="vendor/${DEVICE}-old-perf_defconfig"
+elif [[ "$CAM_LIB" == "3" ]]; then
+	DFCF="vendor/${DEVICE}-oss-perf_defconfig"
+fi
 	CONFIG="$KERNEL_DIR/arch/arm64/configs/$DFCF"
 
 # COLORS
