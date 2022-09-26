@@ -21,7 +21,7 @@
 	DEVICE='wayne'
 	DEVICE2='jasmine'
 	CAM_LIB='1'
-	HAPTICS='2'
+	HAPTICS='1'
 
 # PATH
 	KERNEL_DIR=`pwd`
