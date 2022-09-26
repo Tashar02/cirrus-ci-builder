@@ -6,7 +6,7 @@ task:
   name: "Scarlet-X-Kernel-Builder"
   timeout_in: 2h
   container:
-      image: atomxorg/arch-linux:latest
+      image: atomxorg/arch-linux:kernel
       cpu: 8
       memory: 32G
 
