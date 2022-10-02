@@ -17,7 +17,10 @@ mkdir toolchains
 
 #gut https://github.com/cyberknight777/gcc-arm64.git -b master toolchains/gcc64
 gut https://github.com/mvaisakh/gcc-arm.git -b gcc-master toolchains/gcc32
-gut https://gitlab.com/Tashar02/neutron-clang.git -b Neutron-16 toolchains/clang
+
+mkdir toolchains/clang && cd toolchains/clang
+bash <(curl -s https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman) -S=latest
+cd ../..
 
 ############################################################################
 
