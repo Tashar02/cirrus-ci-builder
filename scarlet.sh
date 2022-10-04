@@ -27,7 +27,7 @@ BUILD='clean'
 NAME='Mi A2 / 6X'
 DEVICE='wayne'
 DEVICE2='jasmine'
-CAM_LIB='1'
+CAM_LIB='3'
 HAPTICS='1'
 
 # Paths
