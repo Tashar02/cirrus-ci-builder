@@ -17,9 +17,7 @@ mkdir toolchains
 gut https://github.com/mvaisakh/gcc-arm.git -b gcc-master toolchains/gcc32
 
 # Clone CLANG
-mkdir toolchains/clang && cd toolchains/clang
-bash <(curl -s https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman) -S
-cd ../..
+gut https://gitlab.com/Tashar02/neutron-clang.git -b Neutron-16 toolchains/clang
 
 # Clone AnyKernel3
 gut https://github.com/Tashar02/AnyKernel3.git AnyKernel3
