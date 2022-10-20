@@ -86,7 +86,7 @@ pass() {
 		CC_64='aarch64-elf-'
 		CC='aarch64-elf-gcc'
 		HOSTCXX='aarch64-elf-g++'
-		C_PATH="$TOOLCHAIN/gcc64/bin:$HOME/scarlet-x/gcc32/"
+		C_PATH="$TOOLCHAIN/gcc64/bin:$TOOLCHAIN/gcc32"
 	else
 		clear
 		error 'Value not recognized'
