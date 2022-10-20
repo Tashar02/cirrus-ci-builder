@@ -73,7 +73,7 @@ if [[ "$SILENCE" == "1" ]]; then
 fi
 
 # Flags to be passed to compile
-pass() {
+flags() {
 	if [[ "$COMPILER" == "clang" ]]; then
 		CC='clang'
 		HOSTCC="$CC"
@@ -93,12 +93,12 @@ pass() {
 	fi
 	CC_32="$TOOLCHAIN/gcc32/bin/arm-eabi-"
 	CC_COMPAT="$TOOLCHAIN/gcc32/bin/arm-eabi-gcc"
-	build
+	env
 }
 export PATH=$C_PATH/bin:$PATH
 
 # Function to pass compilation flags
-muke() {
+pass() {
 	make O=work $CFLAG ARCH=arm64 $FLAG \
 		CC=$CC \
 		LLVM=1 \
@@ -147,7 +147,7 @@ tg_post_build() {
 }
 
 # Cleanup the build environment
-build() {
+env() {
 	clear
 	if [[ "$BUILD" == "clean" ]]; then
 		rm -rf work log.txt || mkdir work
@@ -160,7 +160,7 @@ build() {
 # Let the compilation begin
 compile() {
 	CFLAG=$DFCF
-	muke
+	pass
 
 	echo -e "$B"
 	echo -e "                Build started                "
@@ -169,7 +169,7 @@ compile() {
 	BUILD_START=$(date +"%s")
 
 	CFLAG=-j$(nproc --all)
-	muke
+	pass
 
 	# Compilation ends
 	BUILD_END=$(date +"%s")
@@ -270,4 +270,4 @@ zip_ak() {
 	"
 	exit 0
 }
-pass
+flags
