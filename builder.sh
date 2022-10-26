@@ -23,7 +23,7 @@ gsc https://gitlab.com/Tashar02/neutron-clang.git -b Neutron-16 toolchains/clang
 gsc https://github.com/Tashar02/AnyKernel3.git AnyKernel3
 
 # Clone Kernel Source
-gsc https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b test Kernel
+gsc https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b rebase Kernel
 
 # Setup Scripts
 mv scarlet.sh Kernel/scarlet.sh
