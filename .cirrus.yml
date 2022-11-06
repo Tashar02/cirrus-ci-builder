@@ -6,7 +6,7 @@ task:
   name: "Scarlet-X-Kernel-Builder"
   timeout_in: 2h
   container:
-      image: atomxorg/arch-linux:kernel
+      image: ghcr.io/neutron-toolchains/docker-image:arch-neutron
       cpu: 8
       memory: 32G
 
