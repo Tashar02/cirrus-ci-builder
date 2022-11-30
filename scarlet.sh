@@ -29,6 +29,7 @@ DEVICE='wayne'
 DEVICE2='jasmine'
 CAM_LIB='3'
 HAPTICS='2'
+PARTITION='DYNAMIC'
 
 # Paths
 KERNEL_DIR=$(pwd)
@@ -238,7 +239,7 @@ zip_ak() {
 
 	cd $ZIP_DIR
 
-	FINAL_ZIP="$KNAME-$CAM-$HAPTIC-$FDEVICE2-$FDEVICE-$(date +"%H%M")"
+	FINAL_ZIP="$KNAME-$CAM-$HAPTIC-$PARTITION-$FDEVICE2-$FDEVICE-$(date +"%H%M")"
 	zip -r9 "$FINAL_ZIP".zip * -x README.md LICENSE FUNDING.yml *placeholder zipsigner*
 	java -jar zipsigner* "$FINAL_ZIP.zip" "$FINAL_ZIP-signed.zip"
 	FINAL_ZIP="$FINAL_ZIP-signed.zip"
@@ -262,7 +263,7 @@ zip_ak() {
 	Device: <code>$NAME</code>
 	Codename: <code>$DEVICE</code>
 	Zipname: <code>$FINAL_ZIP</code>
-	Variant: <code>$VARIANT</code>
+	Variant: <code>$VARIANT, $PARTITION</code>
 	Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
 	Build Duration: <code>$(($DIFF / 60)).$(($DIFF % 60)) mins</code>
 	Last Commit Name: <code>$COMMIT_NAME</code>
