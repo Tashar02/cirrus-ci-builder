@@ -21,7 +21,7 @@ cd ../..
 gsc https://github.com/Tashar02/AnyKernel3.git AnyKernel3
 
 # Clone Kernel Source
-gsc https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b rebase Kernel
+gsc https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b rebase-2 Kernel
 
 # Setup Scripts
 mv scarlet.sh Kernel/scarlet.sh
