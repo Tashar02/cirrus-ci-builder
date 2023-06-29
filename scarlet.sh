@@ -18,6 +18,8 @@ USER='Tashar'
 HOST='Cirrus'
 TOKEN="${token}"
 CHATID="${chat_id}"
+BOT_MSG_URL="https://api.telegram.org/bot${TOKEN}/sendMessage"
+BOT_BUILD_URL="https://api.telegram.org/bot${TOKEN}/sendDocument"
 DEVICE='Mi A2 / 6X'
 CODENAME='wayne'
 CODENAME2='jasmine'
@@ -56,20 +58,24 @@ Arguments:
 
 # A function to send message(s) via Telegram's BOT api
 tg_post_msg() {
-	curl -s -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
-		-d "chat_id=${CHATID}" \
+	curl -s -X POST "${BOT_MSG_URL}" \
+		-d chat_id="${CHATID}" \
 		-d "disable_web_page_preview=true" \
 		-d "parse_mode=html" \
-		-d "text=$1" &>/dev/null
+		-d text="$1"
 }
 
 # A function to send file(s) via Telegram's BOT api
 tg_post_build() {
-	curl --progress-bar -F document=@"$1" "https://api.telegram.org/bot${TOKEN}/sendDocument" \
-		-F "chat_id=${CHATID}" \
+	#Post MD5Checksum alongwith for easeness
+	MD5CHECK=$(md5sum "$1" | cut -d' ' -f1)
+
+	#Show the Checksum alongwith caption
+	curl --progress-bar -F document=@"$1" "${BOT_BUILD_URL}" \
+		-F chat_id="${CHATID}" \
 		-F "disable_web_page_preview=true" \
 		-F "parse_mode=html" \
-		-F "caption=$2" &>/dev/null
+		-F caption="$2 | <b>MD5 Checksum : </b><code>${MD5CHECK}</code>"
 }
 
 ## Argument list
@@ -77,7 +83,7 @@ for args in "${@}"; do
 	case "${args}" in
 	"--clang")
 		C_PATH="${TOOLCHAIN}/clang"
-		KBUILD_COMPILER_STRING="${C_PATH}/bin/clang -v 2>&1 | head -n 1 | sed 's/(https..*//' | sed 's/ version//')"
+		KBUILD_COMPILER_STRING="$(${C_PATH}/bin/clang -v 2>&1 | head -n 1 | sed 's/(https..*//' | sed 's/ version//')"
 		MAKE+=(
 			O=work
 			LLVM=1
@@ -88,11 +94,12 @@ for args in "${@}"; do
 		;;
 	"--gcc")
 		C_PATH="${TOOLCHAIN}/gcc64/bin:${TOOLCHAIN}/gcc32"
-		KBUILD_COMPILER_STRING="${TOOLCHAIN}/gcc64/bin/aarch64-elf-gcc --version | head -n 1)"
+		KBUILD_COMPILER_STRING="$(${TOOLCHAIN}/gcc64/bin/aarch64-elf-gcc --version | head -n 1)"
 		MAKE+=(
 			O=work
 			CC=aarch64-elf-gcc
 			LD="${TOOLCHAIN}/gcc64/bin/aarch64-elf-ld.lld"
+			LD_LIBRARY_PATH=${C_PATH}/lib:${LD_LIBRARY_PART}
 			AR=llvm-ar
 			NM=llvm-nm
 			OBJCOPY=llvm-objcopy
@@ -180,7 +187,7 @@ DIFF="$((BUILD_END - BUILD_START))"
 
 ## Start zipping and posting
 if [[ -f "${KERNEL_DIR}/work/arch/arm64/boot/Image.gz-dtb" ]]; then
-	tg_post_build "${KERNEL_DIR}/log.txt" "Compiled kernel successfully!!"
+	tg_post_build "log.txt" "Compiled kernel successfully!!"
 	source "${KERNEL_DIR}/work/.config"
 
 	KNAME="$(echo "${CONFIG_LOCALVERSION}" | cut -c 2-)"
@@ -188,18 +195,28 @@ if [[ -f "${KERNEL_DIR}/work/arch/arm64/boot/Image.gz-dtb" ]]; then
 	DATE="$(date +"%Y-%m-%d %H:%M")"
 	COMMIT_NAME="$(git show -s --format=%s)"
 	COMMIT_HASH="$(git rev-parse --short HEAD)"
-	ZIP_NAME="${KNAME}-${CAM}+${HAPTIC}+${PARTITION}-${CODENAME2^^}-${CODENAME^^}-$(date +"%H%M")"
+	if [[ $PARTITION == NON-DYNAMIC ]]; then
+		ZIP_NAME="${KNAME}-${CAM}-${HAPTIC}-${CODENAME2^^}-${CODENAME^^}-$(date +"%H%M")"
+	else
+		ZIP_NAME="${KNAME}-${CAM}-${HAPTIC}-${PARTITION}-${CODENAME2^^}-${CODENAME^^}-$(date +"%H%M")"
+	fi
+	FINAL_ZIP="${ZIP_NAME}-signed.zip"
 
 	cp "${KERNEL_DIR}/work/arch/arm64/boot/Image.gz-dtb" "${ZIP_DIR}"
 	cd "${ZIP_DIR}" || exit 1
-	zip -r9 "${ZIP_NAME}.zip" ./* -x README.md LICENSE FUNDING.yml zipsigner*
-	java -jar zipsigner* "${ZIP_NAME}.zip" "${ZIP_NAME}-signed.zip"
+	zip -r9 "${ZIP_NAME}.zip" * -x README.md LICENSE FUNDING.yml zipsigner*
+	java -jar zipsigner* "${ZIP_NAME}.zip" "${FINAL_ZIP}"
 	echo -e "\n${CYAN}	Pushing kernel zip...\n"
-	tg_post_build "${ZIP_NAME}-signed.zip" "${CAM}+${HAPTIC}+${PARTITION}"
+	if [[ $PARTITION == NON-DYNAMIC ]]; then
+		tg_post_build "${FINAL_ZIP}" "${CAM}+${HAPTIC}"
+	else
+		tg_post_build "${FINAL_ZIP}" "${CAM}+${HAPTIC}+${PARTITION}"
+	fi
+	cd ${KERNEL_DIR}
 
 	# Print the build information
 	tg_post_msg "
-=========Scarlet-X Kernel=========
+	=========Scarlet-X Kernel=========
   Compiler: <code>${KBUILD_COMPILER_STRING}</code>
   Linux Version: <code>${KV}</code>
   Maintainer: <code>${USER}</code>
@@ -211,7 +228,7 @@ if [[ -f "${KERNEL_DIR}/work/arch/arm64/boot/Image.gz-dtb" ]]; then
   Build Duration: <code>$((DIFF / 60)).$((DIFF % 60)) mins</code>
   Last Commit Name: <code>${COMMIT_NAME}</code>
   Last Commit Hash: <code>${COMMIT_HASH}</code>
-"
+	"
 else
 	tg_post_build "log.txt" "Build failed!!"
 	echo -e "\n${RED}	Kernel image not found"
