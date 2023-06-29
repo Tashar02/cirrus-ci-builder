@@ -28,4 +28,4 @@ mv scarlet.sh Kernel/scarlet.sh
 cd Kernel
 
 # Compile the kernel using CLANG
-bash scarlet.sh clang
+bash scarlet.sh --clang --osscam --qti --full-lto
