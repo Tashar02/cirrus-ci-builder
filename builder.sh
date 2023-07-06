@@ -21,7 +21,7 @@ cd ../..
 gsc https://github.com/Tashar02/AnyKernel3.git AnyKernel3
 
 # Clone Kernel Source
-gsc https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b a13/qti-haptics Kernel
+gsc https://github.com/Atom-X-Devs/android_kernel_xiaomi_scarlet.git -b a13/qpnp-haptics Kernel
 
 # Setup Scripts
 mv scarlet.sh Kernel/scarlet.sh
