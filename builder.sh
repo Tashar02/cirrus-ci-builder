@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# Global Variables
-AOSP_CLANG_VER='clang-r498229'
-
 # Helper function for cloning: gsc = git shallow clone
 gsc() {
 	git clone --depth=1 -q $@
@@ -17,9 +14,7 @@ mkdir toolchains
 
 # Clone CLANG
 mkdir toolchains/clang && cd toolchains/clang
-#bash <(curl -s https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman) -S
-wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/${AOSP_CLANG_VER}.tgz
-tar -xf ${AOSP_CLANG_VER}.tgz
+bash <(curl -s https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman) -S
 cd ../..
 
 # Clone AnyKernel3
